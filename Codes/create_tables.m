@@ -20,8 +20,8 @@ close all
 
 load('Param.mat')
 load('FICE.mat')
-load('FIP.mat')
-load('IIPCC.mat')
+load('FIP_test.mat')
+load('IIPCC_test.mat')
 load('IICECC.mat')
 
 %fice_rec = load('../Recalibration/FICE.mat');

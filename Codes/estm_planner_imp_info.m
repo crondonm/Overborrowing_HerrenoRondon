@@ -7,7 +7,7 @@
 % Authors:  Juan Herreño, jherrenolopera@ucsd.edu
 %               Carlos Rondón Moreno, crondon@bcentral.cl
 %
-% Date: 16 December  2022
+% Date: June 2024
 %
 % Standard Convention:
 % Variable named using Upper case: Variable only in terms of the original state 
@@ -80,7 +80,6 @@ window = Param.window;
 Tol = 1e-08;
 finiter = 0;
 maxiter = 1000;
-V = zeros(Yn,bn);
 
 %% Value Function Iteration
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,6 +108,11 @@ u(Ind==1) = -1e12;
 if min(c(:,end))<0
     fprintf('Unfeasible Grid')
 end
+
+
+% Initialize Value Function
+V= ones(Yn,bn)./sqrt(15);
+
 
 fprintf('Start value function iteration ...  \n')
 
@@ -143,7 +147,7 @@ BCOptInd = sub2ind(size(BC3d),repmat((1:Yn)',[bn 1]),reshape(repmat((1:bn),[Yn 1
 CTOpt    = reshape(ct(BCOptInd),[Yn bn]);
 COpt     = reshape(c(BCOptInd),[Yn bn]);
 POpt     = reshape(p(BCOptInd),[Yn bn]);
-BCOpt    = reshape(BC(BCOptInd),[Yn bn]);
+BCOpt   = reshape(BC(BCOptInd),[Yn bn]);
 UOpt     = reshape(lambda(BCOptInd),[Yn bn]);
 
 %% Computing Optimal Tax
@@ -164,17 +168,11 @@ for iz = 1:Yn
   end
 end
 
-TAO    = (EESP./Utom) - 1;
-AAA    = Bopt > BCOpt;
-MuBind = (1 - AAA);
-Ind    = find(MuBind==1);
-[rw, cl] = ind2sub(size(MuBind),Ind);
+TAO =  (EESP./Utom) - 1;
+AAA = Bopt <= BCOpt  + (b(2) - b(1))/2 ; 
+TAO(AAA==1) = 0;
+TAO(TAO<0) = 0;
 
-for i = 1:length(rw)
-    for j = 1:length(cl)
-        TAO(rw(i),cl(j)) = 0;
-    end
-end
 
 fprintf('Done \n')
 
@@ -244,7 +242,7 @@ for i=2:Tsim+1
     CSim(i) = C3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1))) ;
     CTSim(i) = CT3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1))) ;
     CNSim(i) = exp(SimgN(i) + g).*exp(Simyt(i-1));
-    TAOSim(i) = TAO(Index(i), SimB(i));
+    TAOSim(i) = TAO(Index(i), SimB(i-1));
     
     if mod(i,Tsim/10) == 0
        disp(i);
@@ -318,7 +316,6 @@ CCC =CA;
 CCCT = nstd*std(CCC);
 Crisis = (CCC > CCCT).*(1 - AAA) ;
 Crisis2 = sum(Crisis)/(length(CCC)) ;
-%Crisis = [0 Crisis]; 
 CrInd = find(Crisis == 1) ;
 CrInd = CrInd(CrInd > window + 1) ; 
 CrInd = CrInd(CrInd < Tsim - burn - window) ;  
@@ -341,7 +338,7 @@ for i= - window : window
     Cycles.IRZNSim(i + window + 1,:) = Simyn(CrInd + i);
     Cycles.IRGSim(i + window + 1,:) = Simg(CrInd + i) + g;
     Cycles.IRDtoY(i + window + 1,:) = DtoY(CrInd + i); 
-    Cycles.IRTAO(i + window + 1,:) = TAOSim(CrInd + i - 1);
+    Cycles.IRTAO(i + window + 1,:) = TAOSim(CrInd + i);
     Cycles.IRCtoY(i + window + 1,:) = CtoY(CrInd + i + 1);
     Cycles.IRCTtoY(i + window + 1,:) = CTtoY(CrInd + i);
     Cycles.IRCNtoY(i + window + 1,:) = CNtoY(CrInd + i);
@@ -436,11 +433,6 @@ IIPCC.Posteriorg = Posteriorg;
 save('IIPCC.mat', 'IIPCC', '-v7.3')
 
 
-%% IRFs
 
-% fprintf("Starting IRF simulation ... \n")
-% TranMat = struct('A', A, 'Xvec', Xvec, 'cc', cc, 'S', S, 'T', T,  'yt', yt, 'yn', yn, 'gt', gt, 'g', g, 'gT', gT, 'gN', gN, 'nstd', nstd, 'k1', k1, 'k2', k2);
-% IIPIRF = compute_irf_imp_info  (Xvec, TranMat, init_debt, horizn, Pol, BC3d, P3d, CT3d, 1, b, TAO);
-% save('IIPIRF.mat','IIPIRF','-v7.3');
 
-fprintf("Done \n")
+

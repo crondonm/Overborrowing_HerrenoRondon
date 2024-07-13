@@ -315,17 +315,6 @@ saveas(f8,'Figures/Figure8_TaxFun_IIPvsFIP','png');
 %% Figure 9: Optimal Macroprudential Policy: Optimal Tax Functions
 % Ergodic Distribution of Debt
 
-% Drop outliers
-% meanIIP=mean(IIPCC.TAOSim(IIPCC.TAOSim<10));
-% meanFIP=mean(FIP.TAOSim(FIP.TAOSim<10));
-% H = histogram(FI_TAOSim,'Normalization','probability','DisplayStyle','stairs') ;
-% datax1= H.BinEdges(H.Values~=0) ;
-% datay1= H.Values(H.Values~=0) ;
-%  
-% H = histogram(II_TAOSim,'Normalization','probability','DisplayStyle','stairs') ;
-% datax2= H.BinEdges(H.Values~=0) ;
-% datay2= H.Values(H.Values~=0) ;
-
 p = prctile(IIPCC.TAOSim, [0.75, 99.25]);  
 II_TAOSim = IIPCC.TAOSim(IIPCC.TAOSim>=p(1) & IIPCC.TAOSim<=p(2));
 p = prctile(FIP.TAOSim, [0.75, 99.25]);

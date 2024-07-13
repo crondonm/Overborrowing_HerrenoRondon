@@ -5,9 +5,9 @@
 % problem under perfect information
 %               
 % Authors:  Juan Herreño, jherrenolopera@ucsd.edu
-%               Carlos Rondón Moreno, crondon@bcentral.cl
+%           Carlos Rondón Moreno, crondon@bcentral.cl
 %
-% Date: 16 December  2022
+% Date: June 2024
 %
 % Standard Convention:
 % Variable named using Upper case: Variable only in terms of the original state 
@@ -78,6 +78,7 @@ window = Param.window;
 Tol = 1e-08;
 maxiter = 1000;
 
+
 %% Value Function Iteration
 %  *********************************************************************************
 
@@ -86,7 +87,6 @@ c  = ((omega)*(max(ct,1e-10).^((eta-1)/eta)) + ((1-omega))*(exp(yN+gT).^((eta-1)
 p  = (((1-omega))/(omega)).*(exp(yN+gT)./max(ct,1e-10)).^(-1/eta); 
 BC = - kappa*(exp(yT+gT)+p.*exp(yN+gT));
 lambda = (omega).*(c.^(-rho+1/eta)).*(ct.^(-(1/eta)));
-
 
 for ii=1:(Yn*bn)
     Temp1 = find(ct(ii,:)>0,1,'last');
@@ -103,7 +103,7 @@ u(Ind==1) = -1e12; % Never choose a point where the collateral is violated
 
 % Initialize Value Function
 
-V= zeros(Yn,bn);
+V= ones(Yn,bn)./sqrt(15);
 
 % Start iteration
 
@@ -165,17 +165,10 @@ for iz = 1:Yn
   end
 end
 
-TAO = (EESP./Utom)-1;
-AAA = Bopt > BCOpt;
-MuBind = (1-AAA) ;
-Ind = find(MuBind==1);
-[rw, cl] = ind2sub(size(MuBind),Ind);
-
-for i = 1:length(rw)
-    for j = 1:length(cl)
-        TAO(rw(i),cl(j)) = 0;
-    end
-end
+TAO =  (EESP./Utom) - 1;
+AAA = Bopt <= BCOpt + (b(2)-b(1))/2;  
+TAO(AAA==1) = 0;
+TAO(TAO<0) = 0;
 
 fprintf('Done \n')
 
@@ -201,6 +194,7 @@ GBBT = nstd*std(Simg) ;
 PSim = zeros(1,Tsim);
 CSim = zeros(1,Tsim);
 BCSim = zeros(1,Tsim);
+BCSim2 = zeros(1,Tsim);
 CTSim = zeros(1,Tsim);
 CNSim = zeros(1,Tsim);
 TAOSim = zeros(1,Tsim);
@@ -222,13 +216,15 @@ for i=2:Tsim
     SimB(i) = Pol(Index(i),SimB(i - 1));
     SimBhat(i) = b(SimB(i))/exp(Simyt(i - 1));     % ReNormalization of b
     BCSim(i) = BC3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1)))/exp(Simyt(i - 1));  % Collateral at period i, this is BC=Borrowing Constraint
+    BCSim2(i) = BC3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1)));  % Collateral at period i, this is BC=Borrowing Constraint
     CTSim(i) = CT3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1)))/exp(Simyt(i - 1));  % Consumption of tradables 
     CSim(i) = C3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1)))/exp(Simyt(i - 1));  % Consumption of tradables 
     PSim(i) = P3d(Index(i), SimB(i - 1), Pol(Index(i), SimB(i - 1)));                    % Price
-    TAOSim(i) = TAO(Index(i), SimB(i));
     grYTSim(i) = exp(Simg(i) + Simyt(i) - Simyt(i - 1) + g);
     grYNSim(i) = exp(Simg(i) + Simyn(i) - Simyt(i - 1) + g);
     CNSim(i) = grYNSim(i).*exp(Simyt(i - 1));  % Consumption of Non-tradables 
+    TAOSim(i) = TAO(Index(i), SimB(i-1));
+
    
     if mod(i,Tsim/10) == 0
        disp(i);
@@ -268,6 +264,7 @@ SimB = SimB(1, burn + 1:end);
 CSim = CSim(1, burn + 1:end);
 PSim = PSim(1, burn + 1:end);
 BCSim = BCSim(1, burn + 1:end);
+BCSim2 = BCSim2(1, burn + 1:end);
 CTSim = CTSim(1, burn  + 1:end);
 CNSim = CNSim(1, burn + 1:end);
 TAOSim = TAOSim(1, burn + 1:end);
@@ -284,7 +281,7 @@ Posterioryn = Posterioryn(1, burn + 1:end);
 
 fprintf("Starting crises analysis ... \n")
 
-AAA = SimBhat > (BCSim + (b(2)-b(1))/2) ; 
+AAA = b(SimB) > (BCSim2 + (b(2)-b(1))/2) ; 
 CCC = CA ; 
 CCCT = nstd*std(CCC);
 Crisis = (CCC>CCCT).*(1-AAA) ;
@@ -369,19 +366,20 @@ FIP.POpt = POpt;
 FIP.COpt = COpt;
 FIP.BCOpt = BCOpt;
 FIP.CTOpt = CTOpt;
-
 FIP.SimB = SimB;
 FIP.SimBhat = SimBhat;
-
 FIP.Index = Index;
 FIP.PSim = PSim;
 FIP.CSim = CSim;
 FIP.CTSim = CTSim;
 FIP.CNSim = CNSim;
 FIP.BCSim = BCSim;
+FIP.BCSim2 = BCSim2;
 FIP.VSim = VSim;
 FIP.Cycles = Cycles;
-
+FIP.Posterioryt =  Posterioryt;
+FIP.Posteriorg = Posteriorg;
+FIP.Posterioryn = Posterioryn;
 FIP.CrInd = CrInd;
 FIP.Freq = Crisis2
 FIP.DtoY = DtoY;
@@ -398,12 +396,5 @@ FIP.stdGBB = GBBT;
 
 save('FIP.mat', 'FIP', '-v7.3')
 
-%% IRF
 
-% fprintf("Starting IRF simulation ... \n")
-% TranMat = struct('A', A, 'Xvec', Xvec,  'S', S,  'yt', yt, 'yn', yn, 'gt', gt, 'g', g, 'nstd', nstd);
-% FIPIRF = compute_irf_pfct_info(Xvec, TranMat, init_debt, horizn, Pol, BC3d,P3d,CT3d,1,b,TAO);
-% save('FIPIRF.mat', 'FIPIRF', '-v7.3');
-
-fprintf("Done \n")
 
