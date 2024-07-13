@@ -447,14 +447,3 @@ IICECC.Posterioryn = Posterioryn;
 IICECC.Posteriorg = Posteriorg;
 
 save('IICECC.mat','IICECC', '-v7.3') ;
-
-%% IRFs
-%fprintf("Starting IRF simulation ... \n")
-
-%global A S T cc yt yn gt g gT gN nstd k1 k2 
-
-%TranMat = struct('A', A, 'Xvec', Xvec, 'cc', cc, 'S', S, 'T', T,  'yt', yt, 'yn', yn, 'gt', gt, 'g', g, 'gT', gT, 'gN', gN, 'nstd', nstd, 'k1', k1, 'k2', k2);
-
-%IICEIRF = compute_irf_imp_info (Xvec, TranMat, init_debt, horizn, Pol, BC3d, P3d, CT3d, Lambda3d, b, 1);
-fprintf("Done \n")
-%save('IICEIRF.mat','IICEIRF','-v7.3');

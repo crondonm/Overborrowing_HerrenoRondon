@@ -422,13 +422,4 @@ FICE.LambdaSim = LambdaSim;
 
 save('FICE.mat','FICE', '-v7.3') ;
 
-%% IRF
-
-%fprintf("Starting IRF simulation ... \n")
-
-%TranMat = struct('A', A, 'Xvec', Xvec,  'S', S,  'yt', yt, 'yn', yn, 'gt', gt, 'g', g, 'nstd', nstd);
-%FICEIRF = compute_irf_pfct_info(Xvec, TranMat, init_debt, horizn, Pol, BC3d,P3d,CT3d,Lambda3d,b,1);
-
-%save('FICEIRF.mat','FICEIRF','-v7.3');
-
 fprintf("Done \n")
