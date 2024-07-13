@@ -28,31 +28,40 @@ For this file, we use two ancillary files:
 
 ### 2.3 estm_dctrlzd_eqp_imp_info.m
 
-In this code, we use Policy Function iteration to solve the decentralized equilibrium model with imperfect information. The code also simulates de model, including the IRF-like series shown in the paper.
+In this code, we use Policy Function iteration to solve the decentralized equilibrium model with imperfect information. The program also produces the simulations of the model.
 
 ### 2.4 estm_planner_eqp_imp_info.m
 
-In this code, we use Value Function iteration to solve the decentralized equilibrium model with imperfect information. The code also simulates de model, including the IRF-like series shown in the paper.
+In this code, we use Value Function iteration to solve the decentralized equilibrium model with imperfect information. The program also produces the simulations of the model.
 
 ### 2.5 estm_dctrlzd_eqp_pfct_info.m
 
-In this code, we use Policy Function iteration to solve the decentralized equilibrium model with perfect information. The code also simulates de model, including the IRF-like series shown in the paper.
-
+In this code, we use Policy Function iteration to solve the decentralized equilibrium model with perfect information. The program also produces the simulations of the model.
 
 ### 2.6 estm_planner_eqp_pfct_info.m
 
-In this code, we use Value Function iteration to solve the decentralized equilibrium model with perfect information. The code also simulates de model, including the IRF-like series shown in the paper.
+In this code, we use Value Function iteration to solve the decentralized equilibrium model with perfect information. The program also produces the simulations of the model.
 
+### 2.7 estm_dctrlzd_eqp_imp_info_simple_rule.m
 
-### 2.7 simul_welf_costs.m
+In this code, we use Policy Function iteration to solve the decentralized equilibrium model with imperfect information under a simple fixed tax rate. The program also produces the simulations of the model. The fixed tax rate can be adjusted to any multiple of the steady state tax rate.
+
+```matlab
+    % Multiple of the tax rate; if multiple = 1.0, then the tax rate is the same as average tax rate in the benchmark economy
+    % If multiple = 0.88, then the tax rate is the optimal fixed tax rate 
+        multiple  = 1.0;
+        tao = 0.1140*multiple;
+```
+
+### 2.8 simul_welf_costs.m
 
 Once both models are solved and the .mat files containing the solution are created. This code simulates the welfare costs for both the perfect and imperfect information models. 
 
-### 2.8 create_figures.m
+### 2.9 create_figures.m
 
 Once all the previous steps are completed. This file uses the .mat files containing the results to produce all the figures included both in the paper and the appendix.
 
-### 2.9 create_tables.m
+### 3.0 create_tables.m
 
 Once all the previous steps are completed. This file uses the .mat files containing the results to produce all the tables included both in the paper and the appendix.
 
