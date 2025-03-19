@@ -28,7 +28,7 @@ E = [0; 0; 0; 0];
 
     n = size(A, 1);
     X = zeros(n, T);
-    P_tt = 1000*eye(n);
+    P_tt = 1e3*eye(n);
 
     % Likelihood Evaluation
 
